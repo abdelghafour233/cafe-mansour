@@ -2,7 +2,12 @@
 import { GoogleGenAI } from "@google/genai";
 
 export async function generateBlogPost(topic: string) {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("API Key is missing");
+  }
+  
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     const response = await ai.models.generateContent({
@@ -24,7 +29,9 @@ export async function generateBlogPost(topic: string) {
       }
     });
 
-    return JSON.parse(response.text || '{}');
+    const text = response.text;
+    if (!text) throw new Error("Empty response from AI");
+    return JSON.parse(text);
   } catch (error) {
     console.error("Gemini Error:", error);
     throw error;
